@@ -112,7 +112,7 @@ void setup() {
 
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("RMP v1.1        ");
+  lcd.print("RMP v1.2        ");
   lcd.setCursor(0, 1);
   lcd.print("by officialrez  ");
 
@@ -134,7 +134,7 @@ void loop() {
     noTone(buzzerPin);
 
     isPlaying = false;
-    currentMenuSelection = (currentMenuSelection + 1) % 4;
+    currentMenuSelection = (currentMenuSelection + 1) % 5;
     drawMenu();
     delay(300);
   }
@@ -153,7 +153,13 @@ void loop() {
         playSong(testMelody, sizeof(testMelody) / sizeof(testMelody[0]));
       } else if (currentMenuSelection == 3) {
         playSong(alarmMelody, sizeof(alarmMelody) / sizeof(alarmMelody[0]));
-      } 
+      } else if (currentMenuSelection == 4) {
+        playSiren();
+    
+        // Reset interface state when it's done
+        isPlaying = false; 
+        drawMenu();
+      }
     } 
   }
 }
@@ -170,7 +176,9 @@ void drawMenu() {
     lcd.print(isPlaying ? "Playing: Test   " : "Select: Test    ");
   } else if (currentMenuSelection == 3) {
     lcd.print(isPlaying ? "Playing: Alarm  " : "Select: Alarm   ");
-  } 
+  } else if (currentMenuSelection == 4) {
+    lcd.print(isPlaying ? "Playing: Siren  " : "Select: Siren   ");
+  }
 
   lcd.setCursor(0, 1);
   if (isPlaying) {
@@ -209,3 +217,88 @@ void playSong(int melody[], int totalNotes) {
   drawMenu();
 }
 
+void playSiren() {
+  float currentSpeed = 0.0;
+  
+  while (currentSpeed < 1.0) {
+    if (digitalRead(btnNext) == LOW || digitalRead(btnSelect) == LOW) { 
+      isPlaying = false; noTone(buzzerPin); drawMenu(); 
+      while(digitalRead(btnNext) == LOW || digitalRead(btnSelect) == LOW);
+      delay(400);
+      return; 
+    }
+    
+    int baseHz = 31 + (int)(currentSpeed * 885.0);
+    int upperHz = (baseHz * 12) / 10;
+    
+    if ((millis() / 3) % 2 == 0) {
+      tone(buzzerPin, baseHz);
+    } else {
+      tone(buzzerPin, upperHz);
+    }
+    
+    delay(4);
+    
+    float acceleration;
+    if (currentSpeed < 0.2) {
+      acceleration = 0.00025; 
+    } else if (currentSpeed < 0.7) {
+      acceleration = 0.00065; 
+    } else {
+      acceleration = 0.0003; 
+    }
+    currentSpeed += acceleration;
+  }
+
+  unsigned long holdStart = millis();
+  while (millis() - holdStart < 14000) {
+    if (digitalRead(btnNext) == LOW || digitalRead(btnSelect) == LOW) { 
+      isPlaying = false; noTone(buzzerPin); drawMenu(); 
+      while(digitalRead(btnNext) == LOW || digitalRead(btnSelect) == LOW);
+      delay(400);
+      return; 
+    }
+    
+    if ((millis() / 3) % 2 == 0) {
+      tone(buzzerPin, 916);
+    } else {
+      tone(buzzerPin, 1100);
+    }
+    delay(4);
+  }
+
+  while (currentSpeed > -0.001) {
+    if (digitalRead(btnNext) == LOW || digitalRead(btnSelect) == LOW) { 
+      isPlaying = false; noTone(buzzerPin); drawMenu(); 
+      while(digitalRead(btnNext) == LOW || digitalRead(btnSelect) == LOW);
+      delay(400);
+      return; 
+    }
+    
+    int baseHz = 31 + (int)(currentSpeed * 885.0);
+    if (baseHz < 31) baseHz = 31;
+    int upperHz = (baseHz * 12) / 10;
+    
+    if ((millis() / 3) % 2 == 0) {
+      tone(buzzerPin, baseHz);
+    } else {
+      tone(buzzerPin, upperHz);
+    }
+    
+    delay(4);
+    
+    float deceleration;
+    if (currentSpeed > 0.8) {
+      deceleration = 0.0003; 
+    } else if (currentSpeed > 0.3) {
+      deceleration = 0.00065; 
+    } else {
+      deceleration = 0.00025; 
+    }
+    currentSpeed -= deceleration;
+  }
+
+  isPlaying = false;
+  noTone(buzzerPin); 
+  drawMenu();
+}

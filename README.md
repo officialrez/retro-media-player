@@ -1,2 +1,2 @@
 # retro-media-player
-RMP for Arduino
+Retro Media Player for Arduino UNO and other compatible boards.

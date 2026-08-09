@@ -92,16 +92,6 @@ int testMelody[] = {
   C4,2, C3,2, A2,2, L1,2, L2,2, L3,2, L4,2
 };
 
-int alarmMelody[] = {
-  A5, 4,  D5, 4,  A5, 4,  D5, 4,
-  A5, 4,  D5, 4,  A5, 4,  D5, 4,
-  A5, 4,  D5, 4,  A5, 4,  D5, 4,
-  A5, 4,  D5, 4,  A5, 4,  D5, 4,
-  A5, 4,  D5, 4,  A5, 4,  D5, 4,
-  A5, 4,  D5, 4,  A5, 4,  D5, 4,
-};
-
-
 // Splash screen
 void setup() {
   lcd.begin(16, 2);
@@ -134,7 +124,7 @@ void loop() {
     noTone(buzzerPin);
 
     isPlaying = false;
-    currentMenuSelection = (currentMenuSelection + 1) % 4;
+    currentMenuSelection = (currentMenuSelection + 1) % 3;
     drawMenu();
     delay(300);
   }
@@ -151,9 +141,7 @@ void loop() {
         playSong(marioMelody, sizeof(marioMelody) / sizeof(marioMelody[0]));
       } else if (currentMenuSelection == 2) {
         playSong(testMelody, sizeof(testMelody) / sizeof(testMelody[0]));
-      } else if (currentMenuSelection == 3) {
-        playSong(alarmMelody, sizeof(alarmMelody) / sizeof(alarmMelody[0]));
-      } 
+      }
     } 
   }
 }
@@ -168,8 +156,6 @@ void drawMenu() {
     lcd.print(isPlaying ? "Playing: SMB    " : "Select: SMB     ");
   } else if (currentMenuSelection == 2) {
     lcd.print(isPlaying ? "Playing: Test   " : "Select: Test    ");
-  } else if (currentMenuSelection == 3) {
-    lcd.print(isPlaying ? "Playing: Alarm  " : "Select: Alarm   ");
   } 
 
   lcd.setCursor(0, 1);
